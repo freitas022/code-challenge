@@ -6,6 +6,7 @@ import freitas.codechallenge.role.Role;
 import freitas.codechallenge.role.RoleRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -54,6 +55,12 @@ public class UserService {
 
     public void delete(@Positive final long id) {
         userRepository.deleteById(id);
+    }
+
+    public void updatePassword(JwtAuthenticationToken jwt, @Size(min = 8) String newPassword) {
+        var user = findById(Long.valueOf(jwt.getToken().getSubject()));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     private User userFactory(UserDto userDto, Role authority, Department department) {
