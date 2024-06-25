@@ -6,16 +6,17 @@ import freitas.codechallenge.role.Role;
 import freitas.codechallenge.role.RoleRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -44,8 +45,22 @@ public class UserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    public User myProfile(JwtAuthenticationToken jwt) {
+        return findById(Long.valueOf(jwt.getToken().getSubject()));
+    }
+
     public List<User> findAll() {
         return userRepository.findAll(Sort.by(Sort.Direction.ASC, "name"));
+    }
+
+    public void delete(@Positive final long id) {
+        userRepository.deleteById(id);
+    }
+
+    public void updatePassword(JwtAuthenticationToken jwt, @Size(min = 8) String newPassword) {
+        var user = findById(Long.valueOf(jwt.getToken().getSubject()));
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     private User userFactory(UserDto userDto, Role authority, Department department) {

@@ -44,7 +44,7 @@ public class WebSecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth ->
                         auth
-                                .requestMatchers("/sign-in", "/sign-up").permitAll()
+                                .requestMatchers("/sign-in", "/sign-up", "/recover-password").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
