@@ -4,11 +4,9 @@ import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,10 +18,17 @@ public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasAuthority('SCOPE_ROLE_ADMIN')")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> findById(@PathVariable @Positive long id) {
         var user = userService.findById(id);
+
+        return ResponseEntity.ok().body(new UserDto(user));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<UserDto> myProfile(JwtAuthenticationToken jwt) {
+        var user = userService.myProfile(jwt);
 
         return ResponseEntity.ok().body(new UserDto(user));
     }
@@ -37,5 +42,12 @@ public class UserController {
                         .map(UserMinDto::new)
                         .toList()
         );
+    }
+
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    @DeleteMapping(path = "/{id}")
+    public ResponseEntity<Void> delete(@PathVariable @Positive long id, JwtAuthenticationToken jwt) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
